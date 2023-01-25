@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:project_lastest/bloc/gituserblocfile/users_bloc.dart';
 import 'package:project_lastest/ui/widgets/maindrawerwidget.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class GitUsersPage extends StatelessWidget {
   const GitUsersPage({Key key}) : super(key: key);
@@ -31,10 +33,8 @@ class GitUsersPage extends StatelessWidget {
                 ),
                 IconButton(
                     onPressed: () {
-                      print("TOUCH TOUCH");
-                      print(textEditingController.text);
-                      print("TOUCH TOUCH");
-                      textEditingController.text = "";
+                      String kw = textEditingController.text;
+                      context.read<UsersBloc>().add(SearchUsersEvent(keyword: kw));
                     },
                     icon: const Icon(Icons.search)
                 )
