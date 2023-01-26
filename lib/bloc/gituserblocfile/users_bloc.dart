@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
@@ -13,16 +12,57 @@ class UsersBloc extends Bloc<UsersEvent, UsersState> {
   UsersBloc() : super(UsersInitial()) {
     on((SearchUsersEvent event, emit) async {
       // TODO: implement event handler
-      /*print("****************Bloc Event Processing");
-      print(event);
-      print(event.keyword);
-      print("=====================================");*/
-      emit(SearchUsersLoadingState());
+      emit(SearchUsersLoadingState(
+        currentKeyword: state.currentKeyword,
+        pageSize: state.pageSize,
+        totalPages: state.totalPages,
+        currentPage: state.currentPage,
+        users: state.users
+      ));
       try {
-        ListUser listUser = await userRepository.searchUsers(event.keyword, 0, 20);
-        emit(SearchUsersSuccessState(listUser));
+        ListUser listUser = await userRepository.searchUsers(event.keyword, event.page, event.pageSize);
+        int totalPages = (listUser.totalCount / event.pageSize).floor();
+
+        if(listUser.totalCount% event.pageSize!= 0) {
+          totalPages =totalPages+1;
+        }
+        emit(SearchUsersSuccessState(users: listUser.user,currentPage: event.page,totalPages: totalPages, pageSize: event.pageSize,currentKeyword: event.keyword));
       } catch (ex) {
-        emit(SearchUsersErrorState(ex.toString()));
+        emit(SearchUsersErrorState(
+          users: state.users,
+            currentKeyword: state.currentKeyword,
+            currentPage: state.currentPage,
+            pageSize: state.pageSize,
+            totalPages: state.totalPages,
+            errorMessage: ex.toString()));
+      }
+
+
+    });
+    on((NextPageEvent event, emit) async {
+      try {
+        ListUser listUser = await userRepository.searchUsers(event.keyword, event.page, event.pageSize);
+        int totalPages = (listUser.totalCount / event.pageSize).floor();
+
+        if(listUser.totalCount% event.pageSize!= 0) {
+          totalPages =totalPages+1;
+        }
+        List<User> currentList = [...state.users];
+        currentList.addAll(listUser.user);
+        emit(SearchUsersSuccessState(
+            users: currentList,
+            currentPage: event.page,
+            totalPages: totalPages,
+            pageSize: event.pageSize,
+            currentKeyword: event.keyword));
+      } catch (ex) {
+        emit(SearchUsersErrorState(
+            users: state.users,
+            currentKeyword: state.currentKeyword,
+            currentPage: state.currentPage,
+            pageSize: state.pageSize,
+            totalPages: state.totalPages,
+            errorMessage: ex.toString()));
       }
 
 

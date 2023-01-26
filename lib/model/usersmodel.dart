@@ -63,7 +63,7 @@ class User {
   String receivedEventsUrl;
   String type;
   bool siteAdmin;
-  int score;
+  double score;
 
   User.fromJson(Map<String, dynamic> json){
     login = json['login'];
